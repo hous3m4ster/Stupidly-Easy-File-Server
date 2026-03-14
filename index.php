@@ -190,96 +190,9 @@ var_dump($_POST);
       text-decoration: underline;
     }
 
-    /* --- Modal --- */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease;
-    }
-
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .modal-content {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-      width: 90%;
-      max-width: 400px;
-      transform: scale(0.95);
-      transition: transform 0.3s ease;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    }
-
-    .modal-overlay.active .modal-content {
-      transform: scale(1);
-    }
-
-    .modal-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-
-    .modal-filename {
-      color: var(--muted);
-      font-size: 0.875rem;
-      margin-bottom: 1.5rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* --- Progress Bar --- */
-    .progress-track {
-      width: 100%;
-      height: 8px;
-      background: var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-bottom: 1rem;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), #fb923c);
-      border-radius: 4px;
-      width: 0%;
-      transition: width 0.05s linear;
-    }
-
-    .progress-info {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.875rem;
-    }
-
-    .time-label {
-      color: var(--muted);
-    }
-
-    .time-value {
-      font-weight: 500;
-      font-variant-numeric: tabular-nums;
-    }
-
     /* --- Accessibility & Motion --- */
     @media (prefers-reduced-motion: reduce) {
       .upload-zone,
-      .modal-overlay,
-      .modal-content,
-      .progress-fill,
       tbody tr {
         transition: none;
       }
@@ -309,7 +222,9 @@ var_dump($_POST);
     <main>
       <!-- Upload Section -->
       <section class="upload-section">
-        <form id="uploadForm" enctype="multipart/form-data" method="post">
+        <!-- The form action is set to the current URL or a specific endpoint. 
+             Method is POST for file uploads. -->
+        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
           <div 
             class="upload-zone" 
             id="dropZone"
@@ -360,30 +275,10 @@ var_dump($_POST);
     </main>
   </div>
 
-  <!-- Upload Modal -->
-  <div class="modal-overlay" id="uploadModal" role="dialog" aria-modal="true">
-    <div class="modal-content">
-      <h3 class="modal-title">Uploading File</h3>
-      <p class="modal-filename" id="fileName">filename.ext</p>
-      
-      <div class="progress-track">
-        <div class="progress-fill" id="progressBar"></div>
-      </div>
-      
-      <div class="progress-info">
-        <span class="time-label">Time remaining</span>
-        <span class="time-value" id="timeRemaining">3.0s</span>
-      </div>
-    </div>
-  </div>
-
   <script>
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
-    const uploadModal = document.getElementById('uploadModal');
-    const progressBar = document.getElementById('progressBar');
-    const fileNameEl = document.getElementById('fileName');
-    const timeRemainingEl = document.getElementById('timeRemaining');
+    const uploadForm = document.getElementById('uploadForm');
 
     // Click handling
     dropZone.addEventListener('click', () => fileInput.click());
@@ -409,55 +304,21 @@ var_dump($_POST);
     dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
       dropZone.classList.remove('dragover');
-      if (e.dataTransfer.files.length > 0) {
-        handleFile(e.dataTransfer.files[0]);
-      }
-    });
-
-    // File input change
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) {
-        handleFile(e.target.files[0]);
-      }
-    });
-
-    function handleFile(file) {
-      // Reset UI
-      progressBar.style.width = '0%';
-      fileNameEl.textContent = file.name;
       
-      // Show modal
-      uploadModal.classList.add('active');
+      if (e.dataTransfer.files.length > 0) {
+        // Assign the dropped file to the input
+        fileInput.files = e.dataTransfer.files;
+        // Immediately submit the form
+        uploadForm.submit();
+      }
+    });
 
-      // Simulate upload
-      const totalDuration = 3000; // 3 seconds
-      const startTime = Date.now();
-      const updateInterval = 50;
-
-      const interval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min((elapsed / totalDuration) * 100, 100);
-        
-        progressBar.style.width = progress + '%';
-        
-        const remaining = Math.max(0, (totalDuration - elapsed) / 1000);
-        timeRemainingEl.textContent = remaining.toFixed(1) + 's';
-
-        if (progress >= 100) {
-          clearInterval(interval);
-          
-          // Close modal shortly after completion
-          setTimeout(() => {
-            uploadModal.classList.remove('active');
-            fileInput.value = ''; // Reset input
-            
-            document.getElementById('uploadForm').submit();
-            
-            alert('File uploaded successfully!');
-          }, 400);
-        }
-      }, updateInterval);
-    }
+    // Auto-submit on file selection via browse dialog
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        uploadForm.submit();
+      }
+    });
   </script>
 </body>
 </html>
