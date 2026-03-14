@@ -297,15 +297,14 @@ if (isset($_GET['download'])) {
                 <?php
                     $files = new FilesystemIterator( getcwd() . '/files/', FilesystemIterator::SKIP_DOTS );
 
-                    var_dump($files);
-                    /*foreach($files as $file){
+                    foreach($files as $file){
                         ?>
                         <tr>
-                            <td><?php print $file[] ?></td>
+                            <td><?php print $file->getFilename() ?></td>
                             <td><a href="#" class="file-link">Download</a></td>
                         </tr>
                         <?php
-                    }*/
+                    }
                 ?>
               <tr>
                 <td>project-final-v3.zip</td>
