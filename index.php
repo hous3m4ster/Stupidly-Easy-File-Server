@@ -1,0 +1,463 @@
+<?php
+
+//Created by Hous3M4ster
+
+var_dump($_POST);
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stupidly Easy File Server</title>
+  <style>
+    /* --- CSS Variables & Reset --- */
+    :root {
+      --bg: #0f0f0f;
+      --bg-elevated: #1a1a1a;
+      --fg: #f5f5f4;
+      --muted: #78716c;
+      --accent: #f97316;
+      --accent-soft: rgba(249, 115, 22, 0.15);
+      --border: #2a2a2a;
+      --card: #161616;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      background-color: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    /* Subtle background gradient */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(249, 115, 22, 0.08), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(249, 115, 22, 0.05), transparent);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* --- Layout --- */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* --- Header --- */
+    header {
+      padding: 4rem 0 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    /* --- Upload Section --- */
+    .upload-section {
+      padding: 3rem 0;
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 4rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .upload-zone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      transform: scale(1.01);
+    }
+
+    .upload-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1rem;
+      color: var(--muted);
+    }
+
+    .upload-text {
+      font-size: 1.125rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .upload-subtext {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    /* --- Table Section --- */
+    .files-section {
+      padding-bottom: 4rem;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .table-wrapper {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      padding: 1rem 1.25rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9375rem;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr {
+      transition: background 0.15s ease;
+    }
+
+    tbody tr:hover {
+      background: var(--accent-soft);
+    }
+
+    .file-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .file-link:hover {
+      text-decoration: underline;
+    }
+
+    /* --- Modal --- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 400px;
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .modal-filename {
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* --- Progress Bar --- */
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #fb923c);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.05s linear;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+    }
+
+    .time-label {
+      color: var(--muted);
+    }
+
+    .time-value {
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* --- Accessibility & Motion --- */
+    @media (prefers-reduced-motion: reduce) {
+      .upload-zone,
+      .modal-overlay,
+      .modal-content,
+      .progress-fill,
+      tbody tr {
+        transition: none;
+      }
+    }
+
+    /* Focus states for accessibility */
+    *:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1>Stupidly Easy File Server</h1>
+      <p class="subtitle">Upload and share files in seconds</p>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+      <!-- Upload Section -->
+      <section class="upload-section">
+        <form id="uploadForm" enctype="multipart/form-data" method="post">
+          <div 
+            class="upload-zone" 
+            id="dropZone"
+            role="button"
+            tabindex="0"
+            aria-label="Click or drag to upload files"
+          >
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p class="upload-text">Drop your file here</p>
+            <p class="upload-subtext">or click to browse</p>
+            <input type="file" id="fileInput" name="file">
+          </div>
+        </form>
+      </section>
+
+      <!-- Files Table -->
+      <section class="files-section">
+        <h2 class="section-title">Recent Files</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>File Name</th>
+                <th>Link</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>project-final-v3.zip</td>
+                <td><a href="#" class="file-link">Download</a></td>
+              </tr>
+              <tr>
+                <td>presentation-slides.pdf</td>
+                <td><a href="#" class="file-link">Download</a></td>
+              </tr>
+              <tr>
+                <td>meeting-notes-2024.md</td>
+                <td><a href="#" class="file-link">Download</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Upload Modal -->
+  <div class="modal-overlay" id="uploadModal" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h3 class="modal-title">Uploading File</h3>
+      <p class="modal-filename" id="fileName">filename.ext</p>
+      
+      <div class="progress-track">
+        <div class="progress-fill" id="progressBar"></div>
+      </div>
+      
+      <div class="progress-info">
+        <span class="time-label">Time remaining</span>
+        <span class="time-value" id="timeRemaining">3.0s</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadModal = document.getElementById('uploadModal');
+    const progressBar = document.getElementById('progressBar');
+    const fileNameEl = document.getElementById('fileName');
+    const timeRemainingEl = document.getElementById('timeRemaining');
+
+    // Click handling
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    // Keyboard accessibility
+    dropZone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+
+    // Drag interactions
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      // Reset UI
+      progressBar.style.width = '0%';
+      fileNameEl.textContent = file.name;
+      
+      // Show modal
+      uploadModal.classList.add('active');
+
+      // Simulate upload
+      const totalDuration = 3000; // 3 seconds
+      const startTime = Date.now();
+      const updateInterval = 50;
+
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min((elapsed / totalDuration) * 100, 100);
+        
+        progressBar.style.width = progress + '%';
+        
+        const remaining = Math.max(0, (totalDuration - elapsed) / 1000);
+        timeRemainingEl.textContent = remaining.toFixed(1) + 's';
+
+        if (progress >= 100) {
+          clearInterval(interval);
+          
+          // Close modal shortly after completion
+          setTimeout(() => {
+            uploadModal.classList.remove('active');
+            fileInput.value = ''; // Reset input
+            
+            document.getElementById('uploadForm').submit();
+            
+            alert('File uploaded successfully!');
+          }, 400);
+        }
+      }, updateInterval);
+    }
+  </script>
+</body>
+</html>
