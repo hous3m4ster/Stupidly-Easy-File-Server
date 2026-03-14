@@ -301,23 +301,11 @@ if (isset($_GET['download'])) {
                         ?>
                         <tr>
                             <td><?php print $file->getFilename() ?></td>
-                            <td><a href="#" class="file-link">Download</a></td>
+                            <td><a href="?download=<?php print $file->getFilename() ?>" class="file-link">Download</a></td>
                         </tr>
                         <?php
                     }
                 ?>
-              <tr>
-                <td>project-final-v3.zip</td>
-                <td><a href="#" class="file-link">Download</a></td>
-              </tr>
-              <tr>
-                <td>presentation-slides.pdf</td>
-                <td><a href="#" class="file-link">Download</a></td>
-              </tr>
-              <tr>
-                <td>meeting-notes-2024.md</td>
-                <td><a href="#" class="file-link">Download</a></td>
-              </tr>
             </tbody>
           </table>
         </div>
