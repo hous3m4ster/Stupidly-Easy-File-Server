@@ -10,7 +10,7 @@ if(isset($_FILES)){
     }
 
     foreach($_FILES as $file){
-        $filename = $file["filename"];
+        $filename = $file["file_name"];
 
         while(file_exists("files/" . $filename)){
             $filename = "New" . $filename;
