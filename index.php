@@ -295,7 +295,7 @@ if (isset($_GET['download'])) {
             </thead>
             <tbody>
                 <?php
-                    $files = new FilesystemIterator( PATH_ROOT . 'files/', FilesystemIterator::SKIP_DOTS );
+                    $files = new FilesystemIterator( getcwd() . '/files/', FilesystemIterator::SKIP_DOTS );
 
                     var_dump($files);
                     /*foreach($files as $file){
