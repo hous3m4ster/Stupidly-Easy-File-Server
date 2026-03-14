@@ -18,7 +18,26 @@ if(isset($_FILES)){
         }
 
         copy($file["tmp_name"], "files/" . $filename);
+
+    }
+}
+
+if (isset($_GET['download'])) {
+
+    //creates safe file location
+    $filepath = "files/" . basename($_GET['download']);
+
+    //checks if the file exists and it is in fact a file.
+    if (file_exists($filepath) && is_file($filepath)) {
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . basename($_GET['download']) . '"');
+        header('Content-Length: ' . filesize($filepath));
         
+        ob_clean();
+        flush();
+        
+        readfile($filepath);
     }
 }
 
