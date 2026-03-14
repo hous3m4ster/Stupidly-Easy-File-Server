@@ -2,7 +2,25 @@
 
 //Created by Hous3M4ster
 
-var_dump($_POST);
+
+if(isset($_FILES)){
+
+    if(!file_exists("files/")){
+        mkdir("files");
+    }
+
+    foreach($_FILES as $file){
+        $filename = $file["filename"];
+
+        while(file_exists("files/" . $filename)){
+            $filename = "New" . $filename;
+        }
+
+        copy($file["tmp_name"], "files/" . $filename);
+        
+    }
+}
+
 
 ?>
 <!DOCTYPE html>
