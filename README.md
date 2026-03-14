@@ -6,7 +6,8 @@ This application is only intended to be used locally, with users you trust. Do n
 
 ## Installation
 Clone the repo to your local machine
-Install the PHP package. Examples:
+Install the PHP package.
+
 Fedora:
 ```
 sudo dnf install php
