@@ -4,11 +4,12 @@
 
 
 if(isset($_FILES)){
-
+    //checks if dir files/ exists and if not creates it
     if(!file_exists("files/")){
         mkdir("files");
     }
-
+    //goes through the files array and checks if a file with the same name already exists, 
+    //if it does adds new to the filename until it is unique, then copies it from tmp to the files/ directory
     foreach($_FILES as $file){
         $filename = $file["name"];
 
