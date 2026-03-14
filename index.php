@@ -294,6 +294,19 @@ if (isset($_GET['download'])) {
               </tr>
             </thead>
             <tbody>
+                <?php
+                    $files = new FilesystemIterator( PATH_ROOT . 'files/', FilesystemIterator::SKIP_DOTS );
+
+                    var_dump($files);
+                    /*foreach($files as $file){
+                        ?>
+                        <tr>
+                            <td><?php print $file[] ?></td>
+                            <td><a href="#" class="file-link">Download</a></td>
+                        </tr>
+                        <?php
+                    }*/
+                ?>
               <tr>
                 <td>project-final-v3.zip</td>
                 <td><a href="#" class="file-link">Download</a></td>
